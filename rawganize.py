@@ -72,7 +72,7 @@ if __name__ == '__main__':
         error log at the end if they don't match.
 
         example usage:
-        python filedate.py <path> <external-drive-path> --compare"""
+        python rawganize.py <path> <external-drive-path> --compare"""
         sys.exit(1)
 
     cwd = sys.argv[1]
