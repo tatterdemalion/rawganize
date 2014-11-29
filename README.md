@@ -8,4 +8,4 @@ error log at the end if they don't match.
 
 example usage:
   
-  python rawganize.py <path> <external-drive-path> --compare
+  *python rawganize.py < path > < external-drive-path > --compare*
