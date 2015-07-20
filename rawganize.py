@@ -4,29 +4,23 @@ import os
 import sys
 import shutil
 import filecmp
-import hashlib
-from datetime import datetime
-import time
 
-import exifread
+from backends import nikon, samsung
+
+EXTS = {'.NEF': {'backend': nikon},
+        '.SRW': {'backend': samsung}, }
 
 
-def get_metadata(f):
-    metadata = exifread.process_file(f)
-    original_date = metadata['EXIF DateTimeOriginal']
-    created = datetime.strptime(original_date.values, '%Y:%m:%d %H:%M:%S')
-    return {'created': created}
+def check_extension(filename):
+    for ext in EXTS:
+        if filename.endswith(ext):
+            return True
 
 
 def get_filename(path):
-    with open(path, 'r') as f:
-        line = f.readlines()[100]
-        md5 = hashlib.md5(line).hexdigest()
-        f.seek(0)
-        created = get_metadata(f)['created']
-        timestamp = int(time.mktime(created.timetuple()))
-        filename = '%s-%s' % (timestamp, md5) + '.NEF'
-    return filename, created
+    ext = os.path.basename(path).split('.')[-1]
+    backend = EXTS.get('.' + ext)['backend']
+    return backend.get_filename(path, ext)
 
 
 def get_outpath(path, to):
@@ -57,7 +51,7 @@ def total(path):
     counter = 0
     for root, dirs, files in os.walk(path):
         for filename in files:
-            if filename.endswith('.NEF'):
+            if check_extension(filename):
                 counter += 1
     return counter
 
@@ -86,7 +80,7 @@ if __name__ == '__main__':
     counter = 0
     for root, dirs, files in os.walk(cwd):
         for filename in files:
-            if filename.endswith('.NEF'):
+            if check_extension(filename):
                 path = os.path.join(root, filename)
                 outpath = get_outpath(path, to)
                 create_directory(os.path.dirname(outpath))
