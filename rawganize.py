@@ -59,7 +59,7 @@ def total(path):
 if __name__ == '__main__':
     if len(sys.argv) < 3:
         print """
-        This small application help organizing raw Nikon images in an external
+        This small application help organizing raw images in an external
         drive. Use it with caution.
 
         --compare: compares existing files with current ones and returns an
@@ -69,8 +69,8 @@ if __name__ == '__main__':
         python rawganize.py <path> <external-drive-path> --compare"""
         sys.exit(1)
 
-    cwd = sys.argv[1]
-    to = sys.argv[2]
+    cwd = os.path.expanduser(sys.argv[1])
+    to = os.path.expanduser(sys.argv[2])
     compare = False
     if len(sys.argv) > 3 and sys.argv[3] == '--compare':
         compare = True
