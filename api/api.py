@@ -6,7 +6,7 @@ from datetime import datetime
 import exifread
 from rawkit.raw import Raw
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from werkzeug import secure_filename
 
 ALLOWED_EXTENSIONS = set(['NEF', 'SRW'])
@@ -58,19 +58,23 @@ def is_allowed(filename):
         filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 
-@app.route("/", methods=['GET', 'PUT'])
-def index():
+@app.route("/api/", methods=['GET', 'PUT'])
+def api():
     upload_to = app.config['UPLOAD_FOLDER']
     if request.method == 'GET':
         path = request.args.get('path')
-        base_url = app.config['MEDIA_HOST']
+        media_host = app.config['MEDIA_HOST']
         if path:
-            base_url = base_url + path + '/'
+            media_host = media_host + path + '/'
             path = os.path.join(upload_to, path)
         else:
             path = upload_to
-        files = map(lambda x: base_url + x, os.listdir(path))
-        return jsonify(**{'results': files})
+        files = os.listdir(path)
+        paths = map(lambda x: os.path.join(path, x), files)
+        return jsonify(**{'results': {
+            'media_host': media_host,
+            'paths': paths,
+            'files': files}})
 
     elif request.method == 'PUT':
         image = request.files.get('image')
@@ -93,6 +97,11 @@ def index():
                 return jsonify(**{'results': True})
         return jsonify(**{'results': False})
 
+
+@app.route("/")
+def index():
+    path = request.args.get('path', '')
+    return render_template('index.html', path=path)
 
 if __name__ == "__main__":
     app.run(debug=True)
